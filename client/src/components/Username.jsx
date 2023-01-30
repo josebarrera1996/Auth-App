@@ -11,7 +11,6 @@ export default function Username() {
 
     // Utilizando 'useFormik' para implementar las validaciones en el formulario
     const formik = useFormik({
-        // Campo a comprobar
         initialValues: {
             username: ''
         },

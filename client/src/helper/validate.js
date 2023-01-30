@@ -2,13 +2,31 @@ import toast from 'react-hot-toast';
 
 /* Definiendo las validaciones de los formularios */
 
-// Método que será utilizado para buscar las invalidaciones en el formulario que lo aplique
+// Método que será utilizado para buscar las invalidaciones en el formulario del componente 'Username'
 export async function usernameValidate(values) {
     const errors = usernameVerify({}, values);
     return errors;
 }
 
-// Método para buscar las invalidaciones
+// Método que será utilizado para buscar las invalidaciones en el formulario del componente 'Password'
+export async function passwordValidate(values){
+    const errors = passwordVerify({}, values);
+    return errors;
+}
+
+// Método que será utilizado para buscar las invalidaciones en el formulario del componente 'Reset'
+export async function resetPasswordValidation(values){
+    const errors = passwordVerify({}, values);
+    // Si no hay coincidencias en lo ingresado en los campos 'password' y 'confirm_password'...
+    if(values.password !== values.confirm_pwd){
+        errors.exist = toast.error("Password not match.");
+    }
+    return errors;
+}
+
+/* ------------------------------------------------------ */
+
+// Método para buscar las invalidaciones con el campo 'username'
 function usernameVerify(error = {}, values) {
     if (!values.username) {
         // En caso de no ingresar nada...
@@ -18,4 +36,27 @@ function usernameVerify(error = {}, values) {
         error.username = toast.error('Invalid Username')
     }
     return error;
+}
+
+// Método para buscar las invalidaciones en el campo 'password'
+function passwordVerify(errors = {}, values) {
+
+    // RegEX
+    const specialChars = /[`!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~]/;
+
+    if (!values.password) {
+        // Si no se ha ingresado nada...
+        errors.password = toast.error("Password Required.");
+    } else if (values.password.includes(" ")) {
+        // Si la misma comienza con una cadena vacía...
+        errors.password = toast.error("Wrong Password.");
+    } else if (values.password.length < 4) {
+        // Si lo ingresado es menor a 4 carácteres...
+        errors.password = toast.error("Password must be more than 4 characters long.");
+    } else if (!specialChars.test(values.password)) {
+        // Si no se ha ingresado ningún carácter especial...
+        errors.password = toast.error("Password must have special character.");
+    }
+
+    return errors;
 }
