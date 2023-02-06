@@ -32,6 +32,12 @@ export async function registerValidation(values) {
     return errors;
 }
 
+// Método que será utilizado para buscar invalidaciones en el formulario del componente 'Profile'
+export async function profileValidation(values){
+    const errors = emailVerify({}, values);
+    return errors;
+}
+
 /* ------------------------------------------------------ */
 
 // Método para buscar las invalidaciones con el campo 'username'
