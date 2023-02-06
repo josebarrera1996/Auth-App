@@ -9,18 +9,26 @@ export async function usernameValidate(values) {
 }
 
 // Método que será utilizado para buscar las invalidaciones en el formulario del componente 'Password'
-export async function passwordValidate(values){
+export async function passwordValidate(values) {
     const errors = passwordVerify({}, values);
     return errors;
 }
 
 // Método que será utilizado para buscar las invalidaciones en el formulario del componente 'Reset'
-export async function resetPasswordValidation(values){
+export async function resetPasswordValidation(values) {
     const errors = passwordVerify({}, values);
     // Si no hay coincidencias en lo ingresado en los campos 'password' y 'confirm_password'...
-    if(values.password !== values.confirm_pwd){
+    if (values.password !== values.confirm_pwd) {
         errors.exist = toast.error("Password not match.");
     }
+    return errors;
+}
+
+// Método que será utilizado para buscar las invalidaciones en el formulario del componente 'Register'
+export async function registerValidation(values) {
+    const errors = usernameVerify({}, values);
+    passwordVerify(errors, values);
+    emailVerify(errors, values);
     return errors;
 }
 
@@ -59,4 +67,19 @@ function passwordVerify(errors = {}, values) {
     }
 
     return errors;
+}
+
+// Método para buscar invalidaciones en el campo 'email'
+function emailVerify(error = {}, values) {
+    // Si no se ha ingresado nada...
+    if (!values.email) {
+        error.email = toast.error("Email Required.");
+    } else if (values.email.includes(" ")) {
+        // Si hay una cadena vacía (un espaciado)...
+        error.email = toast.error("Wrong Email.");
+    } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+        // Si no cumple con el siguiente RegEX...
+        error.email = toast.error("Invalid email address.");
+    }
+    return error;
 }
