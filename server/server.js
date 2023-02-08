@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import connect from './database/conn.js';
 
 // Inicializando a Express
 const app = express();
@@ -16,10 +17,19 @@ const PORT = 8080;
 
 // Prueba
 app.get('/', (req, res) => {
-    res.status(201).json("Home GET Request")
+    res.status(201).json("Home GET Request");
 });
 
-// Levantando el servidor
-app.listen(PORT, () => {
-    console.log(`Server connected to http://localhost:${PORT}`);
-})
+// Implementando la conexión con la B.D
+connect().then(() => {
+    try {
+        // Si todo ha salido exitoso, levantar el servidor
+        app.listen(PORT, () => {
+            console.log(`Server connected to http://localhost:${PORT}`);
+        })
+    } catch (error) {
+        console.log('Cannot connect to the server');
+    }
+}).catch(error => {
+    console.log("Invalid database connection...!");
+});
