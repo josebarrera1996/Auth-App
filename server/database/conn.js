@@ -13,7 +13,7 @@ async function connect() {
 
     // Realizando la conexión
     const db = await mongoose.connect(getURI);
-    console.log("Database Connected")
+    console.log("Database Connected");
     return db;
 }
 

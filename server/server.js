@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import connect from './database/conn.js';
+import router from './router/routes.js';
 
 // Inicializando a Express
 const app = express();
@@ -15,10 +16,13 @@ app.disable('x-powered-by');
 // Puerto
 const PORT = 8080;
 
-// Prueba
+// HTTP GET Request
 app.get('/', (req, res) => {
     res.status(201).json("Home GET Request");
 });
+
+// Implementando el sistema de ruteo
+app.use('/api', router); // http://localhost:${PORT}/api + router
 
 // Implementando la conexión con la B.D
 connect().then(() => {
