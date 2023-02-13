@@ -1,5 +1,6 @@
 import UserModel from '../model/User.model.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 /** POST: http://localhost:8080/api/register 
  * @param : {
@@ -72,6 +73,21 @@ export async function register(req, res) { // Método para poder registrar a un 
     }
 }
 
+/** Especie de middleware para chequear si el usuario existe */
+export async function verifyUser(req, res, next) {
+    try {
+        // En caso de que el 'req' sea de tipo 'GET' u otro método
+        const { username } = req.method == "GET" ? req.query : req.body;
+
+        // Chequeando
+        let exist = await UserModel.findOne({ username });
+        if (!exist) return res.status(404).send({ error: "Can't find User!" });
+        next(); // En caso de que existe, seguir con la lógica
+    } catch (error) {
+        return res.status(404).send({ error: "Authentication Error" });
+    }
+}
+
 /** POST: http://localhost:8080/api/login 
  * @param: {
   "username" : "example123",
@@ -79,7 +95,43 @@ export async function register(req, res) { // Método para poder registrar a un 
 }
 */
 export async function login(req, res) { // Método para poder logearse
-    res.json('login route');
+    // Obteniendo lo ingresado por el usuario
+    const { username, password } = req.body;
+
+    try {
+        // Chequeando el usuario se encuentra registrado
+        UserModel.findOne({ username })
+            .then(user => {
+                // Si existe...
+                // Comparar ambas passwords (la de texto plano y la encriptada)
+                bcrypt.compare(password, user.password)
+                    .then(passwordCheck => {
+                        // Si no hemos pasado la password
+                        if (!passwordCheck) return res.status(400).send({ error: "Don't have Password" });
+                        // Crear el token
+                        const token = jwt.sign({
+                            // Propiedades
+                            userId: user._id,
+                            username: user.username
+                        }, process.env.JWT_SECRET, { expiresIn: "24h" }); // Expirará en 24 horas
+                        // Respuesta
+                        return res.status(200).send({
+                            msg: "Login Successful...!",
+                            username: user.username,
+                            token
+                        });
+                    })
+                    .catch(error => {
+                        // Si las passwords no coinciden
+                        return res.status(400).send({ error: "Password does not Match" });
+                    })
+            }).catch(error => {
+                // Si no existe
+                return res.status(404).send({ error: "Username not Found" });
+            });
+    } catch (error) {
+        return res.status(500).send({ error });
+    }
 }
 
 /** GET: http://localhost:8080/api/user/example123 */

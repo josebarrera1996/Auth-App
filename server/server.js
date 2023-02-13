@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
@@ -14,7 +16,7 @@ app.use(morgan('tiny'));
 app.disable('x-powered-by');
 
 // Puerto
-const PORT = 8080;
+const PORT = process.env.PORT || 8000;
 
 // HTTP GET Request
 app.get('/', (req, res) => {
