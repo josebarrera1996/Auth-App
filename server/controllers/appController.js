@@ -1,3 +1,6 @@
+import UserModel from '../model/User.model.js';
+import bcrypt from 'bcrypt';
+
 /** POST: http://localhost:8080/api/register 
  * @param : {
   "username" : "example123",
@@ -11,7 +14,62 @@
 }
 */
 export async function register(req, res) { // Método para poder registrar a un nuevo usuario
-    res.json('register route');
+    try {
+        // Obteniendo todo lo ingresado por el usuario
+        const { username, password, profile, email } = req.body;
+
+        // Chequear si el nombre de usuario ingresado ya existe
+        const existUsername = new Promise((resolve, reject) => {
+            UserModel.findOne({ username }, function (err, user) {
+                if (err) reject(new Error(err));
+                // En caso de que ya existe, arrojar el siguiente error
+                if (user) reject({ error: "Please use unique username" });
+                // En caso de que no existe, resolver la promesa
+                resolve();
+            });
+        });
+
+        // Chequear si el email ingresado ya existe
+        const existEmail = new Promise((resolve, reject) => {
+            UserModel.findOne({ email }, function (err, email) {
+                if (err) reject(new Error(err));
+                // En caso de que ya exista, arrojar el siguiente error
+                if (email) reject({ error: "Please use unique Email" });
+                // En caso de que no exista, resolver la promesa
+                resolve();
+            });
+        });
+
+        // Completar ambas promesas
+        Promise.all([existUsername, existEmail])
+            .then(() => {
+                if (password) {
+                    // Si hemos pasado la password, encriptarla
+                    bcrypt.hash(password, 10)
+                        .then(hashedPassword => {
+                            // Prepara el objeto a insertar
+                            const user = new UserModel({
+                                username,
+                                password: hashedPassword,
+                                profile: profile || '',
+                                email
+                            });
+                            // Guardar el usuario recien creado en la B.D
+                            user.save()
+                                .then(result => res.status(201).send({ msg: "User Register Successfully" }))
+                                .catch(error => res.status(500).send({ error }));
+                        }).catch(error => {
+                            return res.status(500).send({
+                                error: "Enable to hashed password"
+                            });
+                        })
+                }
+            }).catch(error => {
+                return res.status(500).send({ error })
+            })
+    } catch (error) {
+        return res.status(500).send(error);
+    }
 }
 
 /** POST: http://localhost:8080/api/login 
